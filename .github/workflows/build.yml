@@ -1,0 +1,41 @@
+name: Build Timezone Injector
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup MSVC
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Create build directory
+      run: mkdir build
+
+    # ---- Build injector.exe ----
+    - name: Build injector.exe
+      run: |
+        cl /O2 /EHsc injector.cpp /link /out:build/injector.exe
+
+    # ---- Build gui_injector.exe ----
+    - name: Build gui_injector.exe
+      run: |
+        cl /O2 /EHsc gui_injector.cpp /link /out:build/gui_injector.exe
+
+    # ---- Build timezonehook.dll ----
+    - name: Build timezonehook.dll
+      run: |
+        cl /LD /O2 /EHsc timezonehook.cpp /link /out:build/timezonehook.dll
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: timezone-injector-build
+        path: build
