@@ -39,6 +39,12 @@ jobs:
         cl /LD /O2 /EHsc /W3 timezonehook.cpp /link /out:build/timezonehook.dll kernel32.lib
       shell: cmd
 
+    # ---- Build browserhook.dll (Browser ICU Hook DLL) ----
+    - name: Build browserhook.dll
+      run: |
+        cl /LD /O2 /EHsc /W3 browserhook.cpp /link /out:build/browserhook.dll kernel32.lib psapi.lib
+      shell: cmd
+
     # ---- Build injector.exe (Legacy CLI tool) ----
     - name: Build injector.exe
       run: |

@@ -4,7 +4,9 @@
 
 ## 🎯 功能特性
 
-- **图形界面**：易于使用的 Windows GUI，可选择目标程序和时区
+- **图形界面**：美观的淡蓝色主题 GUI，使用微软雅黑字体
+- **多语言支持**：支持中文和英文界面切换
+- **浏览器模式**：专门针对 Chrome/Edge 等浏览器的 ICU 时区 Hook
 - **多时区支持**：预配置了主要时区（UTC、东京、北京、纽约等共20个时区）
 - **进程注入**：自动将时区钩子 DLL 注入到目标进程
 - **无外部依赖**：完全自包含，无需 Detours 或其他第三方库
@@ -14,7 +16,8 @@
 
 预编译的二进制文件位于 `build/` 目录：
 - `gui_injector.exe` - 主 GUI 应用程序
-- `timezonehook.dll` - 时区钩子 DLL（GUI 自动使用）
+- `timezonehook.dll` - 通用时区钩子 DLL（用于普通程序）
+- `browserhook.dll` - 浏览器时区钩子 DLL（用于 Chrome/Edge 等浏览器）
 - `injector.exe` - 传统命令行注入工具
 
 ## 🚀 使用方法
@@ -22,11 +25,33 @@
 ### GUI 方式（推荐）
 
 1. 运行 `gui_injector.exe`
-2. 点击"Browse..."选择目标可执行文件
-3. 从下拉菜单选择所需时区
-4. 点击"Launch & Inject"
+2. （可选）在右上角切换界面语言（中文/English）
+3. 点击"浏览..."选择目标可执行文件
+4. 从下拉菜单选择所需时区
+5. **如果目标是浏览器**（Chrome、Edge、Brave 等），勾选"浏览器模式（Hook ICU）"
+6. 点击"启动并注入"
 
 目标应用程序将以自定义时区设置启动。
+
+### 浏览器模式说明
+
+浏览器（如 Chrome、Edge）使用 ICU 库来处理时区，普通的 Windows API Hook 无法生效。
+
+**浏览器模式的工作原理**：
+- Hook ICU 库的 `TimeZone::createDefault()` 函数
+- 强制返回指定的 IANA 时区（如 `Asia/Tokyo`）
+- 影响 JavaScript 的时区 API：
+  - `Intl.DateTimeFormat().resolvedOptions().timeZone`
+  - `new Date().toString()`
+  - `Intl.DateTimeFormat().format(new Date())`
+
+**支持的浏览器**：
+- ✅ Google Chrome
+- ✅ Microsoft Edge
+- ✅ Brave Browser
+- ✅ 其他基于 Chromium 的浏览器
+
+**注意**：Firefox 使用不同的时区实现，可能不支持。
 
 ### 命令行方式
 

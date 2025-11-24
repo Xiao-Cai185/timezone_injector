@@ -6,19 +6,47 @@
 
 1. **下载二进制文件**，从 `build/` 目录获取：
    - `gui_injector.exe` - 主应用程序
-   - `timezonehook.dll` - 必需的 DLL（必须与 exe 在同一文件夹）
+   - `timezonehook.dll` - 通用程序钩子 DLL
+   - `browserhook.dll` - 浏览器专用钩子 DLL
 
-2. **将两个文件放在同一目录**
+2. **将所有文件放在同一目录**
 
 3. **运行 `gui_injector.exe`**
 
-4. **使用浏览按钮选择目标可执行文件**
+4. **（可选）切换界面语言**：右上角可选择中文或 English
 
-5. **从下拉菜单选择时区**
+5. **选择目标程序**：
+   - 普通程序：直接选择即可
+   - **浏览器**（Chrome/Edge/Brave）：选择后勾选"浏览器模式（Hook ICU）"
 
-6. **点击"Launch & Inject"**
+6. **选择时区**：从下拉菜单选择所需时区
+
+7. **点击"启动并注入"**
 
 目标应用程序将以选定的时区启动！
+
+### 浏览器模式特别说明
+
+浏览器使用 ICU 库处理时区，需要特殊的 Hook 方式：
+
+**步骤**：
+1. 选择浏览器可执行文件（如 `chrome.exe`、`msedge.exe`）
+2. ✅ **勾选"浏览器模式（Hook ICU）"**（重要！）
+3. 选择时区
+4. 启动浏览器
+5. 打开 `browser_test.html` 验证时区是否生效
+
+**验证方法**：
+- 在浏览器中打开 `browser_test.html` 测试页面
+- 检查"时区标识符"是否为您选择的时区
+- 查看时间显示是否正确
+
+**支持的浏览器**：
+- ✅ Google Chrome
+- ✅ Microsoft Edge  
+- ✅ Brave Browser
+- ✅ 其他 Chromium 浏览器
+- ❌ Firefox（使用不同实现，暂不支持）
 
 ## 支持的时区
 
