@@ -1,66 +1,67 @@
-name: Build Injectors + TimezoneHook
+name: Build Timezone Injector
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
   pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
 
 jobs:
-  build-all:
+  build-windows:
     runs-on: windows-latest
+    permissions:
+      contents: write
 
     steps:
-    - name: Checkout source
+    - name: Checkout
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
-    - name: Setup MSVC environment
+    - name: Setup MSVC
       uses: ilammy/msvc-dev-cmd@v1
 
-    - name: Download Detours
-      run: |
-        curl -L -o detours.zip https://github.com/microsoft/Detours/archive/refs/heads/main.zip
-        powershell -Command "Expand-Archive detours.zip -DestinationPath detours"
-        move detours\Detours-main detours-src
-
     - name: Create build directory
-      run: mkdir build
-
-    # -------------------------------
-    # Build timezonehook.dll
-    # -------------------------------
-    - name: Build timezonehook.dll
       run: |
-        cl /LD /O2 /EHsc timezonehook.cpp ^
-          /I detours-src\include ^
-          detours-src\lib.X64\detours.lib ^
-          /link /out:build/timezonehook.dll
+        if (Test-Path build) { Remove-Item -Recurse -Force build }
+        New-Item -ItemType Directory -Path build
 
-    # -------------------------------
-    # Build injector.exe
-    # -------------------------------
-    - name: Build injector.exe
-      run: |
-        cl /O2 /EHsc injector.cpp ^
-          /I detours-src\include ^
-          detours-src\lib.X64\detours.lib ^
-          /link /out:build/injector.exe
-
-    # -------------------------------
-    # Build gui_injector.exe (Win GUI)
-    # -------------------------------
+    # ---- Build gui_injector.exe (Main GUI Application) ----
     - name: Build gui_injector.exe
       run: |
-        cl /O2 /EHsc gui_injector.cpp ^
-          /DUNICODE /D_UNICODE ^
-          /I detours-src\include ^
-          detours-src\lib.X64\detours.lib ^
-          /link /out:build/gui_injector.exe /SUBSYSTEM:WINDOWS
+        cl /O2 /EHsc /W3 gui_injector.cpp /link /SUBSYSTEM:WINDOWS /out:build/gui_injector.exe user32.lib gdi32.lib kernel32.lib comdlg32.lib
+      shell: cmd
 
-    # -------------------------------
-    # Upload all artifacts
-    # -------------------------------
-    - name: Upload Artifacts
+    # ---- Build timezonehook.dll (Injection DLL) ----
+    - name: Build timezonehook.dll
+      run: |
+        cl /LD /O2 /EHsc /W3 timezonehook.cpp /link /out:build/timezonehook.dll kernel32.lib
+      shell: cmd
+
+    # ---- Build injector.exe (Legacy CLI tool) ----
+    - name: Build injector.exe
+      run: |
+        cl /O2 /EHsc /W3 injector.cpp /link /out:build/injector.exe kernel32.lib
+      shell: cmd
+
+    - name: List build artifacts
+      run: |
+        Write-Host "Build artifacts:"
+        Get-ChildItem -Path build -Recurse | Format-Table Name, Length, LastWriteTime
+
+    - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: timezone-injector-suite
+        name: timezone-injector-windows
         path: build/*
+        retention-days: 90
+
+    - name: Commit build artifacts to repository
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add build/
+        git diff --staged --quiet || git commit -m "Auto-build: Update binaries [skip ci]"
+        git push
+      continue-on-error: true

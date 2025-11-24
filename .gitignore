@@ -1,0 +1,29 @@
+# Build artifacts (but we want to commit them)
+# Uncomment if you don't want build artifacts in repo:
+# build/
+
+# Visual Studio / MSVC
+*.obj
+*.pdb
+*.ilk
+*.exp
+*.lib
+*.iobj
+*.ipdb
+
+# Temporary files
+*.tmp
+*.log
+*.swp
+*~
+
+# IDE files
+.vs/
+.vscode/
+*.suo
+*.user
+*.sln.docstates
+
+# OS files
+.DS_Store
+Thumbs.db
